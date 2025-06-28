@@ -6,16 +6,18 @@ const authRoutes = require('./routes/auth');
 const mapsRoutes = require('./routes/maps');
 
 const app = express();
-app.use(cors(
-  {
-    origin: ['http://localhost:3000', 'https://pathixfrontend.vercel.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  }
-));
+
+// Define corsOptions FIRST
+const corsOptions = {
+  origin: ['https://pathixfrontend.vercel.app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// Use CORS middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight requests
 
 app.use(express.json());
 
