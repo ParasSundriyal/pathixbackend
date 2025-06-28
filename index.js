@@ -7,15 +7,13 @@ const mapsRoutes = require('./routes/maps');
 
 const app = express();
 
-// Define corsOptions FIRST
+// CORS setup
 const corsOptions = {
   origin: ['https://pathixfrontend.vercel.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
-
-// Use CORS middleware
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Handle preflight requests
 
