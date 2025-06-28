@@ -8,7 +8,10 @@ const mapsRoutes = require('./routes/maps');
 const app = express();
 app.use(cors(
   {
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://pathixfrontend.vercel.app/'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   }
 ));
 
