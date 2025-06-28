@@ -9,7 +9,10 @@ const app = express();
 
 // CORS setup
 const corsOptions = {
-  origin: ['https://pathixfrontend.vercel.app'],
+  origin: [
+    'https://pathixfrontend.vercel.app',
+    'http://localhost:3000'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -29,6 +32,8 @@ mongoose.connect(process.env.MONGO_URI, {
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
+
+
 
 app.get('/', (req, res) => {
   res.send('API is running');
