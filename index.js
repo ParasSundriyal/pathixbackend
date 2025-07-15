@@ -4,6 +4,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const mapsRoutes = require('./routes/maps');
+const themesRoutes = require('./routes/themes');
 const http = require('http');
 const WebSocket = require('ws');
 
@@ -13,7 +14,9 @@ const app = express();
 const corsOptions = {
   origin: [
     'https://pathixfrontend.vercel.app',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://specifies-heather-container-pool.trycloudflare.com'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -41,6 +44,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/maps', mapsRoutes);
+app.use('/api/themes', themesRoutes);
 
 // Create HTTP server and attach WebSocket server
 const server = http.createServer(app);

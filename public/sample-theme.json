@@ -1,0 +1,37 @@
+{
+  "name": "Night",
+  "assets": [
+    { "name": "Home", "icon": "🏠" },
+    { "name": "Landmark", "icon": "🌳" },
+    { "name": "Building", "icon": "🏢" },
+    { "name": "Hospital", "icon": "🏥" },
+    { "name": "Police", "icon": "🚓" },
+    { "name": "Cafe", "icon": "☕" },
+    { "name": "Pool", "icon": "🏊" },
+    { "name": "School", "icon": "🏫" },
+    { "name": "Toilet", "icon": "🚻" },
+    { "name": "Villa", "icon": "🏡" },
+    { "name": "Apartment", "icon": "🏬" },
+    { "name": "Shop", "icon": "🏪" },
+    { "name": "Church", "icon": "⛪" },
+    { "name": "Mosque", "icon": "🕌" },
+    { "name": "Synagogue", "icon": "🕍" },
+    { "name": "Bank", "icon": "🏦" },
+    { "name": "Fire", "icon": "🚒" },
+    { "name": "Pharmacy", "icon": "💊" },
+    { "name": "Restaurant", "icon": "🍽️" },
+    { "name": "Parking", "icon": "🅿️" }
+  ],
+  "backgroundImage": "https://i.imgur.com/0Z8FQyM.jpg",
+  "fonts": ["Poppins", "Arial", "sans-serif"],
+  "roadStyle": {
+    "color": "#eebbc3",
+    "width": 8,
+    "lineCap": "round",
+    "lineJoin": "round"
+  },
+  "animations": {
+    "glowingRoad": true,
+    "pulsingIcons": true
+  }
+} 
