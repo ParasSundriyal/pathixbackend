@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const mapSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    // user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', },
   name: { type: String, required: true },
   data: { type: Object, required: true },
   createdAt: { type: Date, default: Date.now },

@@ -1,10 +1,39 @@
 const express = require('express');
 const Map = require('../models/Map');
+const Theme = require('../models/Theme');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// POST /api/maps/export - Save map and return public link (for QR)
+router.post('/export', async (req, res) => {
+  console.log('Received /export request:', req.body);
+  const { name, gpsPath, landmarks, theme } = req.body;
+  if (!name || !gpsPath || !theme) {
+    console.log('Missing required fields');
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+  try {
+    // Fetch theme by ID
+    const themeObj = await Theme.findById(theme);
+    if (!themeObj) {
+      console.log('Theme not found:', theme);
+      return res.status(404).json({ message: 'Theme not found' });
+    }
+    // Save map (no user required for QR/public)
+    const map = new Map({ name, data: { gpsPath, landmarks, theme: themeObj._id } });
+    await map.save();
+    console.log('Map saved:', map._id);
+    // Return public link
+    const link = `${process.env.FRONTEND_URL || 'https://pathix.vercel.app'}/api/maps/${map._id}`;
+    res.json({ link });
+  } catch (err) {
+    console.error('Error saving map:', err);
+    res.status(500).json({ message: 'Error saving map', error: err.message });
+  }
+});
 
 // Auth middleware
 function auth(req, res, next) {
