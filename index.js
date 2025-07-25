@@ -20,7 +20,7 @@ const corsOptions = {
   origin: [
     'https://pathixfrontend.vercel.app',
     'http://localhost:5000',
-    'http://localhost:3000',
+    'http://localhost:3001',
     'https://specifies-heather-container-pool.trycloudflare.com'
   ],
   credentials: true,
