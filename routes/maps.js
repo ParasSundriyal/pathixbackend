@@ -65,8 +65,8 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', async (req, res) => {
   const map = await Map.findById(req.params.id);
   if (!map) return res.status(404).json({ message: 'Map not found' });
-  // Decrement user's scan left if map belongs to a user
-  if (map.user) {
+  // Only decrement scanLeft if ?decrementScan=true is present
+  if (req.query.decrementScan === 'true' && map.user) {
     const user = await User.findById(map.user);
     if (user && typeof user.scanLeft === 'number') {
       if (user.scanLeft > 0) user.scanLeft -= 1;
