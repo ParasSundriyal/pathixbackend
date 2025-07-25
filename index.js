@@ -10,13 +10,18 @@ const WebSocket = require('ws');
 
 const app = express();
 
+// Increase body size limit to 5MB (or higher if needed)
+app.use(express.json({ limit: '3mb' }));
+app.use(express.urlencoded({ limit: '3mb', extended: true }));
+
+
 // CORS setup
 const corsOptions = {
   origin: [
     'https://pathixfrontend.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://specifies-heather-container-pool.trycloudflare.com'
+  
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

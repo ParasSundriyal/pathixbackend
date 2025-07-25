@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
   phone: { type: String },
   organization: { type: String },
   googleId: { type: String },
+  accountType: { type: String, enum: ['Starter', 'Pro', 'Enterprise'], default: 'Starter' },
+  scanLeft: { type: Number, default: 50 }, // Starter: 50, Pro: 1000, Enterprise: unlimited (set high)
+  avatar: { type: String }, // base64 string
+  avatarType: { type: String }, // MIME type
   createdAt: { type: Date, default: Date.now },
 });
 

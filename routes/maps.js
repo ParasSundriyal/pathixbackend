@@ -7,38 +7,42 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// POST /api/maps/export - Save map and return public link (for QR)
-router.post('/export', async (req, res) => {
-  console.log('Received /export request:', req.body);
-  const { name, gpsPath, landmarks, theme } = req.body;
-  if (!name || !gpsPath || !theme) {
-    console.log('Missing required fields');
-    return res.status(400).json({ message: 'Missing required fields' });
+
+// POST /api/maps - Save a new map (unified, supports QR/public and user)
+router.post('/', auth, async (req, res) => {
+  // req.user is set by auth middleware
+  const userId = req.user && req.user.id ? req.user.id : null;
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized: You must be signed in to export a map.' });
   }
-  try {
-    // Fetch theme by ID
+  const user = await User.findById(userId);
+  const { name, data, gpsPath, landmarks, theme } = req.body;
+  // Accept both {name, data} and {name, gpsPath, landmarks, theme}
+  if (!name || (!data && (!gpsPath || !theme))) return res.status(400).json({ message: 'Name and data required' });
+  // Plan enforcement
+  if (user.accountType === 'starter') {
+    const mapCount = await Map.countDocuments({ user: user._id });
+    if (mapCount >= 1) return res.status(403).json({ message: 'Starter plan allows only 1 map. Upgrade to pro plan' });
+  }
+  // Pro: unlimited
+  let mapData = data;
+  if (!mapData) {
+    // If gpsPath/landmarks/theme provided, build data
     const themeObj = await Theme.findById(theme);
-    if (!themeObj) {
-      console.log('Theme not found:', theme);
-      return res.status(404).json({ message: 'Theme not found' });
-    }
-    // Save map (no user required for QR/public)
-    const map = new Map({ name, data: { gpsPath, landmarks, theme: themeObj._id } });
-    await map.save();
-    console.log('Map saved:', map._id);
-    // Return public link
-    const link = `${process.env.FRONTEND_URL || 'https://pathix.vercel.app'}/api/maps/${map._id}`;
-    res.json({ link });
-  } catch (err) {
-    console.error('Error saving map:', err);
-    res.status(500).json({ message: 'Error saving map', error: err.message });
+    if (!themeObj) return res.status(404).json({ message: 'Theme not found' });
+    mapData = { gpsPath, landmarks, theme: themeObj._id };
   }
+  const map = new Map({ user: user._id, name, data: mapData });
+  await map.save();
+  // Return public link for QR
+  const link = `${process.env.FRONTEND_URL || 'https://pathix.vercel.app'}/maps/${map._id}`;
+  res.status(201).json({ message: 'Map saved', map, link });
 });
 
 // Auth middleware
 function auth(req, res, next) {
   const header = req.headers.authorization;
-  if (!header) return res.status(401).json({ message: 'No token' });
+  if (!header) return res.status(401).json({ message: 'Signin needed (No token)' });
   const token = header.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -49,25 +53,26 @@ function auth(req, res, next) {
   }
 }
 
-// POST /api/maps - Save a new map
-router.post('/', auth, async (req, res) => {
-  const { name, data } = req.body;
-  if (!name || !data) return res.status(400).json({ message: 'Name and data required' });
-  const map = new Map({ user: req.user.id, name, data });
-  await map.save();
-  res.status(201).json({ message: 'Map saved', map });
-});
+
 
 // GET /api/maps - List all maps for user
 router.get('/', auth, async (req, res) => {
   const maps = await Map.find({ user: req.user.id }).sort({ createdAt: -1 });
-  res.json(maps);
+  res.json({ maps });
 });
 
 // GET /api/maps/:id - Publicly view a specific map
 router.get('/:id', async (req, res) => {
   const map = await Map.findById(req.params.id);
   if (!map) return res.status(404).json({ message: 'Map not found' });
+  // Decrement user's scan left if map belongs to a user
+  if (map.user) {
+    const user = await User.findById(map.user);
+    if (user && typeof user.scanLeft === 'number') {
+      if (user.scanLeft > 0) user.scanLeft -= 1;
+      await user.save();
+    }
+  }
   res.json(map);
 });
 
@@ -75,7 +80,9 @@ router.get('/:id', async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
   const map = await Map.findOneAndDelete({ _id: req.params.id, user: req.user.id });
   if (!map) return res.status(404).json({ message: 'Map not found' });
-  res.json({ message: 'Map deleted' });
+  res.json({ message: 'Map deleted', id: req.params.id });
 });
 
-module.exports = router; 
+
+
+module.exports = router;
