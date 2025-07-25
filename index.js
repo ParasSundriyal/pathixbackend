@@ -19,13 +19,13 @@ app.use(express.urlencoded({ limit: '3mb', extended: true }));
 const corsOptions = {
   origin: [
     'https://pathixfrontend.vercel.app',
+    'http://localhost:5000',
     'http://localhost:3000',
-    'http://localhost:3001',
-  
+    'https://specifies-heather-container-pool.trycloudflare.com'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization','*'],
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Handle preflight requests
@@ -66,7 +66,7 @@ wss.on('connection', function connection(ws) {
   });
 });
 
-const PORT = 3000;
+const PORT = 5000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT} (and ws://localhost:${PORT}/ws)`);
 }); 
