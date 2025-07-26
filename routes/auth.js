@@ -34,11 +34,19 @@ router.post('/signup', async (req, res) => {
 
 // POST /api/auth/google
 router.post('/google', async (req, res) => {
+  console.log('Google auth request received:', { 
+    hasCredential: !!req.body.credential, 
+    hasPhone: !!req.body.phone, 
+    hasOrganization: !!req.body.organization,
+    origin: req.headers.origin 
+  });
+  
   try {
     const { credential, phone, organization } = req.body;
     if (!credential) {
       return res.status(400).json({ message: 'Missing Google credential.' });
     }
+    
     // Verify Google token
     const ticket = await client.verifyIdToken({
       idToken: credential,
@@ -47,16 +55,20 @@ router.post('/google', async (req, res) => {
     const payload = ticket.getPayload();
     const email = payload.email;
     const googleId = payload.sub;
+    
     if (!email) {
       return res.status(400).json({ message: 'Google account has no email.' });
     }
+    
     // Find user by email
     let user = await User.findOne({ email });
+    
     if (!user) {
-      // Require phone and organization for new users
+      // New user - require phone and organization for sign up
       if (!phone || !organization) {
         return res.status(400).json({ message: 'Phone and organization are required for Google sign up.' });
       }
+      
       user = new User({
         email,
         googleId,
@@ -66,8 +78,7 @@ router.post('/google', async (req, res) => {
       });
       await user.save();
     } else {
-      // If user exists, treat as login (do not create new)
-      // Update phone/org/googleId if provided and missing
+      // Existing user - update missing fields if provided
       let needsUpdate = false;
       if (!user.phone && phone) {
         user.phone = phone;
@@ -83,11 +94,12 @@ router.post('/google', async (req, res) => {
       }
       if (needsUpdate) await user.save();
     }
+    
     // Issue JWT
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token });
   } catch (err) {
-    console.error(err);
+    console.error('Google auth error:', err);
     res.status(500).json({ message: 'Google authentication failed.' });
   }
 });

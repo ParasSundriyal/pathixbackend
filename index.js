@@ -17,15 +17,36 @@ app.use(express.urlencoded({ limit: '3mb', extended: true }));
 
 // CORS setup
 const corsOptions = {
-  origin: [
-    'https://pathixfrontend.vercel.app',
-    'http://localhost:5000',
-    'http://localhost:3001',
-    'https://specifies-heather-container-pool.trycloudflare.com'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',  // Local React frontend
+      'http://localhost:3001',  // Alternative local port
+      'http://localhost:5000',  // Local backend (if needed)
+      process.env.FRONTEND_URL, // Environment variable
+      'https://pathixfrontend.vercel.app', // Production frontend
+      'https://specifies-heather-container-pool.trycloudflare.com'
+    ];
+    
+    // Allow Vercel preview deployments
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      console.log('CORS allowed origin:', origin);
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization','*'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Handle preflight requests
